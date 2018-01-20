@@ -10,15 +10,18 @@ def create_model_matrix(data, features_cols=None, target_cols=None, lags=1):
         model_matrix = pd.concat([data, lagged_target], axis=1).dropna()
         return model_matrix
 
-    features = create_lagged_features(pd.concat([features, target], axis=1), lags)
+    features = create_lagged_features(pd.concat([features, target], axis=1),
+                                      lags)
     model_matrix = pd.concat([features, target], axis=1).dropna()
     return model_matrix
 
 
 def create_lagged_features(data, lags):
-    '''This function takes a time series and
-    returns a dataframe with <lags> 
-    1-to-lag lagged features.'''
+    '''
+    This function takes a time series and
+    returns a dataframe with <lags>
+    1-to-lag lagged features.
+    '''
     data_list = []
     for lag in range(1, lags+1):
         shifted_data = data.shift(lag)
@@ -28,9 +31,9 @@ def create_lagged_features(data, lags):
 
         shifted_data = shifted_data.rename(columns=col_dict)
         data_list.append(shifted_data)
-    
     data = pd.concat(data_list, axis=1)
     return data
+
 
 def create_ts_df(data, date_col='date'):
     new_data = pd.DataFrame()
@@ -40,4 +43,3 @@ def create_ts_df(data, date_col='date'):
     
     new_data[date_col] = data.loc[data['station'] == station, date_col].reset_index(drop=True)
     return new_data
-
