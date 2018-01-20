@@ -35,3 +35,21 @@ p90 <- function(x) {
       return(quantile(x, 0.9))
 }
 
+dist.log <- function(x) {
+  gam <- fitdist(x, "gamma")
+  gam = summary(gam)
+  norm <- fitdist(x, "norm")
+  norm = summary(norm)
+  pois <- fitdist(x, "pois")
+  pois = summary(pois)
+  weib <- fitdist(x, "weibull")
+  weib = summary(weib)
+  result = c(gam$loglik, norm$loglik, pois$loglik, weib$loglik)
+  return(result)
+} 
+
+
+
+
+  
+  
