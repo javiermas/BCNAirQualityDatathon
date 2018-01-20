@@ -16,7 +16,7 @@ class LSTM(object):
         self.model.add(LSTM(self.hidden_units,
             input_shape=(self.batch_size, self.seq_length)))
         self.create_dense_layers(self.num_layers, self.num_units)
-        self.model.compile(loss='mean_squared_error', optimizer='adam')
+        self.model.compile(loss='log_loss', optimizer='adam')
 
     def fit(X, Y)   
         self.model.fit(X, Y, epochs=100, batch_size=1, verbose=2)
