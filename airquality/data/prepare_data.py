@@ -1,5 +1,6 @@
 import pandas as pd
 import datetime
+from geopy.distance import vincenty
 
 
 def create_model_matrix(features=None, target=None, lags=1):
@@ -98,3 +99,16 @@ def gen_date_features(data):
                  (data['date'] <= datetime.date(year + 1, 3, 20)), 'season'] = 0
 
     return data
+
+
+def gen_distances(stations):
+    stations = stations.rename(columns={'code': 'station'})
+    for st in stations['station']:
+        stations['dist_to_' + st] = 0
+        for i in stations.index:
+            dist = vincenty((stations.loc[i, 'lat'], stations.loc[i, 'lon']),
+                            (stations[stations['station'] == st]['lat'].iloc[0],
+                             stations[stations['station'] == st]['lon'].iloc[0]))
+            stations.loc[i, 'dist_to_' + st] = dist.km
+
+    return stations
