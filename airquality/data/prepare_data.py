@@ -29,3 +29,12 @@ def create_lagged_features(data, lags):
     
     data = pd.concat(data_list, axis=1)
     return data
+
+def create_ts_df(all_models_data):
+    new_data = pd.DataFrame()
+    for station in data['station'].unique():
+	new_data[station] = data.loc[data['station'] == station, 
+		'Concentration'].reset_index(drop=True)
+    
+    return new_data
+
