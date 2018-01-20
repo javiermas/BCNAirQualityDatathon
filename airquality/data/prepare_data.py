@@ -6,7 +6,7 @@ from geopy.distance import vincenty
 def create_model_matrix(data, features_cols=[], target_cols=[], lags=1):
     '''Pass features and target as dataframes.'''
     features_to_drop = [col for col in data.columns if col not in features_cols+target_cols]
-    data = data.drop(features_cols, axis=1)
+    data = data.drop(features_to_drop, axis=1)
     if not features_cols:
         lagged_target = create_lagged_features(data[target_cols], lags)
         model_matrix = pd.concat([data, lagged_target], axis=1).dropna()
