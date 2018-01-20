@@ -1,11 +1,13 @@
 import pandas as pd
 
 
-def create_model_matrix(features=None, target=None, lags=1):
+def create_model_matrix(data, features_cols=None, target_cols=None, lags=1):
     '''Pass features and target as dataframes.'''
-    if features is None:
-        lagged_target = create_lagged_features(target, lags)
-        model_matrix = pd.concat([target, lagged_target], axis=1).dropna()
+    features_to_drop = [col for col in data.columns if col not in features_cols+target_cols]
+    print features_to_drop
+    if features_cols is None:
+        lagged_target = create_lagged_features(data[target_cols], lags)
+        model_matrix = pd.concat([data, lagged_target], axis=1).dropna()
         return model_matrix
 
     features = create_lagged_features(pd.concat([features, target], axis=1), lags)
@@ -30,11 +32,12 @@ def create_lagged_features(data, lags):
     data = pd.concat(data_list, axis=1)
     return data
 
-def create_ts_df(all_models_data):
+def create_ts_df(data, date_col='date'):
     new_data = pd.DataFrame()
     for station in data['station'].unique():
-	new_data[station] = data.loc[data['station'] == station, 
-		'Concentration'].reset_index(drop=True)
+	new_data[station] = data.loc[data['station'] ==\
+                station, 'concentration'].reset_index(drop=True)
     
+    new_data[date_col] = data.loc[data['station'] == station, date_col].reset_index(drop=True)
     return new_data
 
