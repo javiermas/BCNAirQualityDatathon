@@ -24,7 +24,7 @@ param_dict = {
     'hidden_units': 50,
     'num_layers': 1,
     'dense_units': train_Y.shape[1],
-    'epochs': 50,
+    'epochs': 3,
 }
 
 lstm = LSTM_K(**param_dict)
