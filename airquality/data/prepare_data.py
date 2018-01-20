@@ -40,12 +40,10 @@ def create_lagged_features(data, lags):
 def create_ts_df(data, date_col='date'):
     new_data = pd.DataFrame()
     for station in data['station'].unique():
-	new_data[station] = data.loc[data['station'] ==\
+        new_data[station] = data.loc[data['station'] ==\
                 station, 'concentration'].reset_index(drop=True)
-    
-    new_data[date_col] = data.loc[data['station'] == station, date_col].reset_index(drop=True)
+        new_data[date_col] = data.loc[data['station'] == station, date_col].reset_index(drop=True)
     return new_data
-
 
 
 def gen_daily_targets(data):
