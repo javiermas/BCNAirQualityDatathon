@@ -3,11 +3,11 @@ import datetime
 from geopy.distance import vincenty
 
 
-def create_model_matrix(data, features_cols=None, target_cols=None, lags=1):
+def create_model_matrix(data, features_cols=[], target_cols=[], lags=1):
     '''Pass features and target as dataframes.'''
     features_to_drop = [col for col in data.columns if col not in features_cols+target_cols]
-    print features_to_drop
-    if features_cols is None:
+    data = data.drop(features_cols, axis=1)
+    if not features_cols:
         lagged_target = create_lagged_features(data[target_cols], lags)
         model_matrix = pd.concat([data, lagged_target], axis=1).dropna()
         return model_matrix
@@ -40,7 +40,7 @@ def create_lagged_features(data, lags):
 def create_ts_df(data, date_col='date'):
     new_data = pd.DataFrame()
     for station in data['station'].unique():
-	new_data[station] = data.loc[data['station'] ==\
+        new_data[station] = data.loc[data['station'] ==\
                 station, 'concentration'].reset_index(drop=True)
     
     new_data[date_col] = data.loc[data['station'] == station, date_col].reset_index(drop=True)
