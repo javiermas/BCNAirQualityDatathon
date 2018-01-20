@@ -44,9 +44,9 @@ class LSTM_K(object):
             predictions = self.predict(test_x)
             loss = mean_squared_error(test_y, predictions)
             losses.append(loss)
-            print
-            print 'OOS loss for t %d-%d: MSE %f' % (days[0], days[1], loss)
-            print
+            print()
+            print('OOS loss for t %d-%d: MSE %f' % (days[0], days[1], loss))
+            print()
             self.epochs = 10
             trainX, trainY = np.vstack((trainX, test_x)),\
                 np.vstack((trainY, test_y))

@@ -4,9 +4,9 @@ from airquality.data.prepare_data import create_model_matrix
 from airquality.models.split import tt_split, reshape_to_keras
 
 # Read data
-data_obs = read_obs()
-data_targets = read_targets()
-target_cols = data_targets.columns[:-1]
+data_obs = read_obs(path='/home/yc00032/Desktop/Just_Peanuts_II/BCNAirQualityDatathon/data/processed/all_obs.csv')
+data_targets = read_targets(path='/home/yc00032/Desktop/Just_Peanuts_II/BCNAirQualityDatathon/data/processed/targets.csv')
+target_cols = data_targets.drop(columns=['date']).columns
 
 # Prepare data
 seq_length = 1
