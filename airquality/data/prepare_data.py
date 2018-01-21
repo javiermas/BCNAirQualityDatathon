@@ -1,6 +1,28 @@
 import pandas as pd
+import numpy as np
 import datetime
 from geopy.distance import vincenty
+
+def sequences_to_columns(data, cols):
+    data.loc[data['conc_model_1'] < 0, 'conc_model_1'] = np.nan
+    data_list = list()
+    cols_l = [c for c in cols if c != 'station']
+    for station in data['station'].unique():
+        data_station = data.loc[data['station'] == station, cols_l]
+        col_dict = dict() 
+        for col in [c for c in cols if c not in ['date', 'station']]:
+            col_dict[col] = col+'_'+station
+
+        data_station = data_station.rename(columns=col_dict)
+        data_list.append(data_station)
+
+    data_all = data_list[0]
+    for elem in data_list[1:]:
+        data_all = pd.merge(data_all, elem, on='date', how='outer')
+#    data = reduce(lambda x, y: pd.merge(x, y, on ='date', how='outer'), data_list)\
+    data_all = data_all.ffill()
+    return data_all
+
 
 
 def create_model_matrix(data, features_cols=[], target_cols=[], lags=1):
@@ -37,7 +59,7 @@ def create_lagged_features(data, lags):
     return data
 
 
-def create_ts_df(data, date_col='date'):
+def create_ts_df(data, date_col='date', normalize=False):
     new_data = pd.DataFrame()
     for station in data['station'].unique():
         new_data[station] = data.loc[data['station'] ==\
