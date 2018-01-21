@@ -22,12 +22,6 @@ class LSTM_K(object):
         self.dropout = dropout
         self.epochs = epochs
         self.epochs_after = epochs_after
-        if cnn:
-            cnn = Sequential()
-            cnn.add(Conv2D(1, (2,2), activation='relu', 
-                padding='same', input_shape=(1,10,1)))
-            cnn.add(Flatten())
-        #else:    
         self.model = Sequential()
         self.model.add(LSTM(
             self.hidden_units,
@@ -38,12 +32,8 @@ class LSTM_K(object):
         self.model.compile(loss='mse', optimizer=optim)
 
     def train(self, X, Y, test_X, test_Y):
-        if test_X is not None:
-            self.model.fit(X, Y, epochs=self.epochs, batch_size=self.batch_size,
-                           verbose=1, validation_data=(test_X, test_Y))
-        else:
-            self.model.fit(X, Y, epochs=self.epochs, batch_size=self.batch_size,
-                           verbose=1)
+        self.model.fit(X, Y, epochs=self.epochs, batch_size=self.batch_size,
+                       verbose=3, validation_data=(test_X, test_Y))
 
     def predict(self, X):
         return self.model.predict(X)
@@ -73,17 +63,8 @@ class LSTM_K(object):
             self.epochs = self.epochs_after
             trainX, trainY = np.vstack((trainX, test_x)),\
                 np.vstack((trainY, test_y))
-        print 'Predictions', predictions_cum
-        print 'Test', testY
-        '''        
-        plt.plot(predictions_cum)
-        plt.plot(testY)
-        plt.savefig('../../references/'+'predictions'+str(time.time())+'.pdf')
-        plt.plot(mse_losses)
-        plt.savefig('../../references/'+'mse'+str(time.time())+'.pdf')
-        plt.plot(log_losses)
-        plt.savefig('../../references/'+'log_loss'+str(time.time())+'.pdf')
-        '''
+
+        self.predictions_cum = np.vstack(predictions_cum)
         return np.mean(mse_losses), np.mean(log_losses)
 
     def _create_dense_layers(self, num_layers, num_units):
