@@ -5,28 +5,35 @@ import numpy as np
 from sklearn.metrics import log_loss, mean_squared_error
 from matplotlib import pyplot as plt
 from keras.models import Sequential
-from keras.layers import Dense
-from keras.layers import LSTM
+from keras.layers import Dense, LSTM, Dropout, Conv2D, Flatten
 
 
 class LSTM_K(object):
 
-    def __init__(self, batch_size, seq_length, size, hidden_units,
-                 num_layers, dense_units, epochs, learning_rate, epochs_after=10):
+    def __init__(self, batch_size, seq_length, size, hidden_units, num_layers,
+                 dense_units, dropout, epochs, learning_rate,
+                 epochs_after=10, cnn=False):
         self.batch_size = batch_size
         self.seq_length = seq_length
         self.size = size
         self.hidden_units = hidden_units
         self.num_layers = num_layers
         self.dense_units = dense_units
+        self.dropout = dropout
         self.epochs = epochs
         self.epochs_after = epochs_after
-
+        if cnn:
+            cnn = Sequential()
+            cnn.add(Conv2D(1, (2,2), activation='relu', 
+                padding='same', input_shape=(1,10,1)))
+            cnn.add(Flatten())
+        #else:    
         self.model = Sequential()
         self.model.add(LSTM(
             self.hidden_units,
             input_shape=(self.seq_length, self.size)))
         self._create_dense_layers(self.num_layers, self.dense_units)
+        self.model.add(Dropout(self.dropout))
         optim = keras.optimizers.RMSprop(lr=learning_rate)
         self.model.compile(loss='mse', optimizer=optim)
 

@@ -11,7 +11,7 @@ target_cols = data_targets.columns[:-1]
 
 # Prepare data
 seq_length = 1
-model_matrix = create_model_matrix(data_obs, target_cols=list(target_cols))
+model_matrix = create_model_matrix(data_obs, target_cols=list(target_cols))[:50]
 train_size = int(len(model_matrix)*0.7)
 train_X, test_X, train_Y, test_Y = tt_split(model_matrix, train_size, target_cols)
 train_X = reshape_to_keras(train_X, seq_length)
@@ -23,7 +23,7 @@ param_dict = param_df.to_dict(orient='records')
 i = 0
 for d in param_dict:
     int_cols = [col for col in list(param_df.columns)\
-        if col not in ['learning_rate', 'log_loss', 'mse']]
+        if col not in ['learning_rate', 'log_loss', 'mse', 'dropout']]
     for key in int_cols: 
         d[key] = int(d[key])
 

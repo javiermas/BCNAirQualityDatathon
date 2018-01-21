@@ -37,7 +37,7 @@ def create_lagged_features(data, lags):
     return data
 
 
-def create_ts_df(data, date_col='date'):
+def create_ts_df(data, date_col='date', normalize=False):
     new_data = pd.DataFrame()
     for station in data['station'].unique():
         new_data[station] = data.loc[data['station'] ==\
