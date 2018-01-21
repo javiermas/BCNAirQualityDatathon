@@ -35,8 +35,14 @@ class LSTM_K(object):
         self.model.fit(X, Y, epochs=self.epochs, batch_size=self.batch_size,
                        verbose=3, validation_data=(test_X, test_Y))
 
-    def predict(self, X):
-        return self.model.predict(X)
+    def predict(self, X, scaler=None):
+        predictions = self.model.predict(X)
+        if scaler is not None:
+            predictions_h = predictions.reshape([-1, 1])
+            predictions_h = scaler.inverse_transform(predictions_h)
+            predictions = predictions_h.reshape([-1, self.dense_units])
+
+        return predictions
 
     def validate(self, trainX, trainY, testX, testY, scaler):
         i = 0
@@ -51,7 +57,6 @@ class LSTM_K(object):
             test_x, test_y = testX[days[0]:days[1]], testY[days[0]:days[1]]
             self.train(trainX, trainY, test_x, test_y)
             predictions = self.predict(test_x)
-            
             predictions_h = predictions.reshape([-1, 1])
             test_y_h = test_y.reshape([-1, 1])
             predictions_h = scaler.inverse_transform(predictions_h)
