@@ -38,9 +38,10 @@ class LSTM_K(object):
     def predict(self, X):
         return self.model.predict(X)
 
-    def validate(self, trainX, trainY, testX, testY):
+    def validate(self, trainX, trainY, testX, testY, scaler):
         i = 0
         predictions_cum = list()
+        labels_cum = list()
         mse_losses = list()
         log_losses = list()
         while i < len(testY):
@@ -50,10 +51,17 @@ class LSTM_K(object):
             test_x, test_y = testX[days[0]:days[1]], testY[days[0]:days[1]]
             self.train(trainX, trainY, test_x, test_y)
             predictions = self.predict(test_x)
-            mse_loss = mean_squared_error(test_y, predictions)
-            l_loss = log_loss((test_y > 100)*1, (predictions > 100)*1)
-            for pred in predictions:
-                predictions_cum.append(pred)
+            
+            predictions_h = predictions.reshape([-1, 1])
+            test_y_h = test_y.reshape([-1, 1])
+            predictions_h = scaler.inverse_transform(predictions_h)
+            test_y_h = scaler.inverse_transform(test_y_h)
+
+            mse_loss = mean_squared_error(test_y_h, predictions_h)
+            l_loss = log_loss((test_y_h > 100)*1, (predictions_h > 100)*1, labels=[0,1])
+            predictions_h = predictions_h.reshape([-1, self.dense_units])
+            predictions_cum.append(predictions_h)
+            labels_cum.append(test_y_h.reshape([-1, self.dense_units]))
             mse_losses.append(mse_loss)
             log_losses.append(l_loss)
             print()
@@ -65,6 +73,7 @@ class LSTM_K(object):
                 np.vstack((trainY, test_y))
 
         self.predictions_cum = np.vstack(predictions_cum)
+        self.labels_cum = np.vstack(labels_cum)
         return np.mean(mse_losses), np.mean(log_losses)
 
     def _create_dense_layers(self, num_layers, num_units):
