@@ -1,6 +1,6 @@
 BCNAirQualityDatathon
 ==============================
-
+WE SUCK
 Project repository for the Air Quality Datathon
 
 Project Organization
