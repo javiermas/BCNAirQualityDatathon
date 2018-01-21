@@ -4,7 +4,6 @@ import datetime
 from geopy.distance import vincenty
 
 def sequences_to_columns(data, cols):
-    data.loc[data['conc_model_1'] < 0, 'conc_model_1'] = np.nan
     data_list = list()
     cols_l = [c for c in cols if c != 'station']
     for station in data['station'].unique():

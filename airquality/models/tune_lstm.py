@@ -1,5 +1,7 @@
 import pandas as pd
+import numpy as np
 from matplotlib import pyplot as plt
+from sklearn.preprocessing import MinMaxScaler
 from airquality.data.read_data import read_obs, read_targets
 from airquality.models.LSTM_keras import LSTM_K
 from airquality.data.prepare_data import create_model_matrix, sequences_to_columns
@@ -11,6 +13,7 @@ from airquality.models.hyperopt import generate_param_space
 data_roll_path = '/home/yc00032/Desktop/Just_Peanuts_II/BCNAirQualityDatathon/data/data_roll_day.csv'
 data = pd.read_csv(data_roll_path)
 data['date'] = pd.to_datetime(data['date'])
+
 
 # Prepare data
 stations = data['station'].unique()
@@ -24,7 +27,16 @@ cols = [
     'target_lag1',    
     'conc_obs',
 ]
-data = data[cols].sort_values(['date', 'station']).reset_index(drop=True)
+cols_l = [col for col in cols if col not in ['date', 'station']]
+for col in cols_l:
+    data.loc[data[col] < 0, col] = np.nan
+
+data = data[cols].sort_values(['date', 'station']).reset_index(drop=True).ffill()
+#print data.loc[data[cols_l] < 0, cols_l]
+scaler = MinMaxScaler(feature_range=(0, 1))
+for col in cols_l:
+    data[col] = scaler.fit_transform(data[col].values.reshape([-1,1]))
+
 model_matrix = sequences_to_columns(data, cols).drop('date', axis=1)[:725] #725
 
 # Tune
@@ -52,17 +64,18 @@ for d in param_dict:
     d.pop('log_loss')
     d.pop('mse')
     lstm = LSTM_K(**d)
-    mse, log_loss = lstm.validate(train_X, train_Y, test_X, test_Y)
+
+    mse, log_loss = lstm.validate(train_X, train_Y, test_X, test_Y, scaler)
     print(d)
     print('MSE:', mse, 'Log loss:', log_loss)
     param_df.loc[i, 'mse'] = mse
     param_df.loc[i, 'log_loss'] = log_loss
     param_df.to_pickle('../../reports/param_df'+str(i)+'.p')
     for s in range(7):
-        plt.plot(lstm.predictions_cum[:,s], label='prediction')
-        plt.plot(test_Y[:,s], label='label')
+        plt.plot(lstm.predictions_cum[:, s], label='prediction')
+        plt.plot(lstm.labels_cum[:, s], label='label')
         plt.legend()
-        plt.savefig('../../reports/predictions/predic'+str(s)+str(i)+'.pdf')
+        plt.savefig('../../reports/predictions/predict'+str(i)+str(s)+'.pdf')
         plt.close()
 
     i += 1
