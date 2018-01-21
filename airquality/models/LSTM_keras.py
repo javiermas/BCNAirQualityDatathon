@@ -33,10 +33,10 @@ class LSTM_K(object):
     def train(self, X, Y, test_X, test_Y):
         if test_X is not None:
             self.model.fit(X, Y, epochs=self.epochs, batch_size=self.batch_size,
-                           verbose=1, validation_data=(test_X, test_Y))
+                           verbose=2, validation_data=(test_X, test_Y))
         else:
             self.model.fit(X, Y, epochs=self.epochs, batch_size=self.batch_size,
-                           verbose=1)
+                           verbose=2)
 
     def predict(self, X):
         return self.model.predict(X)

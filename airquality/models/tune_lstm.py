@@ -5,9 +5,9 @@ from airquality.models.split import tt_split, reshape_to_keras
 from airquality.models.hyperopt import generate_param_space
 
 # Read data
-data_obs = read_obs()
-data_targets = read_targets()
-target_cols = data_targets.columns[:-1]
+data_obs = read_obs('/home/yc00032/Desktop/Just_Peanuts_II/BCNAirQualityDatathon/data/all_obs.csv')
+data_targets = read_targets('/home/yc00032/Desktop/Just_Peanuts_II/BCNAirQualityDatathon/data/targets.csv')
+target_cols = data_targets.drop('date', axis=1).columns
 
 # Prepare data
 seq_length = 1
@@ -31,13 +31,13 @@ for d in param_dict:
     d.pop('mse')
     lstm = LSTM_K(**d)
     mse, log_loss = lstm.validate(train_X, train_Y, test_X, test_Y)
-    print d
-    print 'MSE:', mse, 'Log loss:', log_loss
+    print(d)
+    print('MSE:', mse, 'Log loss:', log_loss)
     param_df.loc[i, 'mse'] = mse
     param_df.loc[i, 'log_loss'] = log_loss
     param_df.to_pickle('../../reports/param_df'+str(i)+'.p')
     i += 1
 
-print param_df
+print(param_df)
 
 
