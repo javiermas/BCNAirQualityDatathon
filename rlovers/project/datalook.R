@@ -1,5 +1,6 @@
 library(pacman)
-p_load(tidyverse, stringr, lubridate, reshape, tidyquant, forecast, progress)
+p_load(tidyverse, stringr, lubridate, reshape, tidyquant, forecast, progress, fitdistrplus)
+source("functions.R")
 
 data_obs_read <- read_csv(file = "data/all_obs.csv")
 data_model_read <- read_csv(file = "data/all_models.csv")
@@ -117,9 +118,9 @@ data_roll_day <- data_tot_lm %>%
 
 colnames_aux <- c("conc_obs", "conc_model_1", "conc_model_2")
 
-total_var <- length(functions_vector) * length(width_vector) * length(colnames_aux)
+total_var <- (length(functions_vector) - 5) * length(width_vector) * length(colnames_aux)
 pb <- progress_bar$new(total = total_var)
-for(i in 1:length(functions_vector)) {
+for(i in 6:length(functions_vector)) {
       for(j in 1:length(width_vector)) {
             for(h in 1:length(colnames_aux)) {
                   data_roll_day <- data_roll_day %>% 
@@ -137,3 +138,64 @@ for(i in 1:length(functions_vector)) {
 }
 
 write_csv(data_roll_day, "data/data_roll_day.csv")
+data_roll_day_cp <- data_roll_day
+
+data_roll_day[data_roll_day == -Inf] <- NA
+
+data_roll_day_imp <- data_roll_day
+mean_before_2015_aux <- data_roll_day_imp %>% dplyr::filter(year < 2015) 
+for(i in 1:ncol(data_roll_day_imp)) {
+      if(sum(is.na(data_roll_day_imp[, i])) > 0) {
+            data_roll_day_imp[is.na(data_roll_day_imp[, i]), i] <- mean(as.matrix(mean_before_2015_aux[ , i]), 
+                                                                        na.rm = TRUE)
+      }
+}
+
+colnames_data_roll_day_imp <- colnames(data_roll_day_imp)
+colnames_indicator <- NULL 
+for(i in 1:ncol(data_roll_day_imp)) {
+      colnames_indicator <- c(colnames_indicator, 
+                              sum(is.na(data_roll_day_imp[ , colnames_data_roll_day_imp[i]]), 
+                                  na.rm = TRUE))
+}
+
+
+write_csv(data_roll_day_imp, "data/data_roll_day.csv")
+
+width_vector <- seq(20, 90, 10)
+functions_vector <- c("dist_log_gamma", "dist_log_norm", "dist_log_weibull")
+
+data_roll_day_sm <- data_roll_day_imp %>% 
+      dplyr::group_by(station)
+
+colnames_aux <- c("conc_obs")
+
+total_var <- length(functions_vector) * length(width_vector) * length(colnames_aux)
+pb <- progress_bar$new(total = total_var)
+for(i in 1:length(functions_vector)) {
+      for(j in 1:length(width_vector)) {
+            for(h in 1:length(colnames_aux)) {
+                  data_roll_day_sm <- data_roll_day_sm %>% 
+                        tq_mutate_(select     = colnames_aux[h], 
+                                   mutate_fun = "rollapply",
+                                   width      = width_vector[j],
+                                   FUN        = functions_vector[i],
+                                   col_rename = paste0(colnames_aux[h],
+                                                       "_", functions_vector[i], "_", 
+                                                       width_vector[j]))
+                  pb$tick()
+                  Sys.sleep(1 / total_var)
+            }
+      }
+}
+
+data_roll_day_sm_imp <- data_roll_day_sm
+mean_before_2015_aux <- data_roll_day_sm %>% dplyr::filter(year < 2015) 
+for(i in 1:ncol(data_roll_day_sm_imp)) {
+      if(sum(is.na(data_roll_day_sm_imp[, i])) > 0) {
+            data_roll_day_sm_imp[is.na(data_roll_day_sm_imp[, i]), i] <- mean(as.matrix(mean_before_2015_aux[ , i]), 
+                                                                        na.rm = TRUE)
+      }
+}
+
+write_csv(data_roll_day_sm_imp, "data/data_roll_day_sm.csv")
